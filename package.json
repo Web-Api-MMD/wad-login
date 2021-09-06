@@ -1,0 +1,29 @@
+{
+  "name": "wad-login",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Web-Api-MMD/wad-login.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Web-Api-MMD/wad-login/issues"
+  },
+  "homepage": "https://github.com/Web-Api-MMD/wad-login#readme",
+  "dependencies": {
+    "config": "^3.3.6",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "joi": "^17.4.2",
+    "lodash": "^4.17.21",
+    "mssql": "^7.2.1"
+  }
+}

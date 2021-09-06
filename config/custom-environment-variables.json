@@ -1,0 +1,9 @@
+{
+    "port": "PORT",
+    "dbConfig_UCN":{
+        "user": "DB_USER",
+        "password": "DB_PWD",
+        "database": "DB_NAME",
+        "server": "DB_HOST"
+    }
+}
