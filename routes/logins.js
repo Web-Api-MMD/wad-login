@@ -30,4 +30,14 @@ router.post('/', async (req, res) => {
     }
 });
 
+router.post('/signup', async (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+
+    try {
+        
+    } catch (err) {
+        
+    }
+});
+
 module.exports = router;

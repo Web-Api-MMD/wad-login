@@ -80,8 +80,31 @@ class Login {
                     reject(error);
                 }
                 sql.close(); // ABC - ALWAY BE CLOSING
-            })()
+            })();
         })
+    }
+
+    // create method to send the data to the database
+    create() {
+        return new Promise((resolve, reject) => {
+            (async () => {
+                // Connect to the DB
+                // Make a query (INSERT INTO loginUser, SELECT with SCOPE_IDENTITY(), INSERT INTO loginPassword)
+                // If all good -> one result back with the userId in the result
+                // Check format (again we don't have a validator for that ATM)
+                // resolve with user
+                // if anything wrong, throw error and reject with error
+                // CLOSE DB CONNECTION
+
+                try {
+                    
+                } catch (error) {
+                    
+                }
+
+                sql.close(); // ABC - ALWAYS BE CLOSING
+            })();
+        });
     }
 }
 
