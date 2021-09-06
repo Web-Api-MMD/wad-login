@@ -71,11 +71,13 @@ class Login {
 
                     console.log(result);
 
-                    if(!result.recordset[0]) throw {statusCode: 404, errorMessage: 'User not found with provided credentials.'}
-                    if(result.recordset.length > 1) throw {statusCode: 500, errorMessage: 'DB fucked yo. Multiple hits of unique data found'}
+                    if(!result.recordset[0]) throw {statusCode: 404, errorMessage: 'User not found with provided credentials.'};
+                    if(result.recordset.length > 1) throw {statusCode: 500, errorMessage: 'DB fucked yo. Multiple hits of unique data found'};
 
                     // Check hashedPassword with bcrypt - compare
-                    
+                    const bcrypt_result = await bcrypt.compare(loginObj.userPassword, result.recordset[0].passwordValue);
+
+                    if(!bcrypt_result) throw {statusCode: 404, errorMessage: 'User not found with provided credentials.'};
 
                     const user = {
                         userId: result.recordset[0].userId,
