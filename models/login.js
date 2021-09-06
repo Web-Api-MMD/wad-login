@@ -18,10 +18,12 @@ class Login {
     static validate(loginObj) {
     const schema = Joi.object({
         userEmail: Joi.string()
-        .email(),
+        .required(),
+        // .email()
         userPassword: Joi.string()
         .min(1)
         .max(255)
+        .required()
     });
 
     return schema.validate(loginObj);
@@ -46,13 +48,13 @@ class Login {
                     .input('userEmail', sql.NVarChar(255), loginObj.userEmail)
                     .input('userPassword', sql.NVarChar(255), loginObj.userPassword)
                     .query(`
-                        SELECT * u.userId, u.userName, r.roleId, r.roleName
+                        SELECT u.userId, u.userName, r.roleId, r.roleName
                         FROM loginUser u
                         JOIN loginPassword p
-                            ON u.loingUserId = p.FK_userId
+                            ON u.userId = p.FK_userId
                         JOIN loginRole r
-                            ON u.FK_roleId = r.roleId
-                        WHERE u.userEmail = @userEmail AND p.passwordValue = @password
+                            ON r.roleId = u.FK_roleId
+                        WHERE u.userEmail = @userEmail AND p.passwordValue = @userPassword
                     `);
 
                     console.log(result);
@@ -78,7 +80,7 @@ class Login {
                     reject(error);
                 }
                 sql.close(); // ABC - ALWAY BE CLOSING
-            })
+            })()
         })
     }
 }
