@@ -1,9 +1,12 @@
 const config = require('config');
 
 const sql = require('mssql');
+
 const con = config.get('dbConfig_UCN');
+const salt = config.get('saltRounds');
 
 const Joi = require('joi');
+const bcrypt = require('bcryptjs');
 
 const _ = require('lodash');
 
@@ -97,6 +100,27 @@ class Login {
                 // CLOSE DB CONNECTION
 
                 try {
+                    // let's generate hashedPassword with bcryptjs
+                    const hashedPassword = await bcrypt.hash(this.userPassword, salt);
+
+                    const pool = await sql.connect(con);
+                    const result00 = await pool.request()
+                    .input('userName', sql.NVarChar(50), this.userName)
+                    .input('userEmail', sql.NVarChar(255), this.userEmail)
+                    .input('hashedPassword', sql.NVarChar(255), hashedPassword)
+                    .query(`
+                    INSERT INTO loginUser([userName], [userEmail], [FK_roleId])
+                    VALUES (@userName, @userEmail, 2)
+                    
+                    SELECT u.userId, u.userName, r.roleId, r.roleName
+                    FROM loginUser u
+                    JOIN loginRole r
+                        ON u.FK_roleId = r.roleId
+                    WHERE u.userId = SCOPE_IDENTITY();
+
+                    INSERT INTO loginPassword([passwordValue], [FK_userId])
+                    VALUES (@hashedPassword, SCOPE_IDENTITY())
+                    `);
                     
                 } catch (error) {
                     
