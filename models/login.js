@@ -59,10 +59,23 @@ class Login {
 
                     if(!result.recordset[0]) throw {statusCode: 404, errorMessage: 'User not found with provided credentials.'}
                     if(result.recordset.length > 1) throw {statusCode: 500, errorMessage: 'DB fucked yo. Multiple hits of unique data found'}
-                    
+
+                    const user = {
+                        userId: result.recordset[0].userId,
+                        userId: result.recordset[0].userId,
+                        userRole: {
+                            roleId: result.recordset[0].roleId,
+                            roleName: result.recordset[0].roleName
+                        }
+                    }
+
+                    resolve(user);
+                    // check if the format is correct
+                    // will need a proper validate function for that 
 
                 } catch (error) {
-                    
+                    console.log(error);
+                    reject(error);
                 }
                 sql.close(); // ABC - ALWAY BE CLOSING
             })
