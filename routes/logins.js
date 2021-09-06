@@ -13,7 +13,7 @@ router.post('/', async (req, res) => {
         // JOI validation error
         const {error} = Login.validate(req.body);
         if(error) throw {statusCode: 400, errorMessage: error}
-        console.log('hej');
+        // console.log('hej');
         const loginObj = new Login(req.body);
         const user = await Login.readByEmail(loginObj);
         console.log(loginObj);
@@ -34,9 +34,20 @@ router.post('/signup', async (req, res) => {
     res.setHeader('Content-Type', 'application/json');
 
     try {
-        
+        const {error} = Login.validate(req.body);
+        if(error) throw {statusCode: 400, errorMessage: error}
+
+        const loginObj = new Login(req.body);
+        const user = await loginObj.create();
+        return res.send(JSON.stringify(user));
+    
     } catch (err) {
-        
+        console.log(err);
+        // user input error
+        if(!err.statusCode) return res.status(500).send(JSON.stringify({errorMessage: err}));
+        if(!err.statusCode != 400) return res.status(err.statusCode).send(JSON.stringify({errorMessage: err}));
+
+        return res.status(400).send(JSON.stringify({errorMessage: err.errorMessage.details[0].message}));
     }
 });
 

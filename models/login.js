@@ -3,30 +3,35 @@ const config = require('config');
 const sql = require('mssql');
 
 const con = config.get('dbConfig_UCN');
-const salt = config.get('saltRounds');
+const salt = parseInt(config.get('saltRounds'));
 
 const Joi = require('joi');
 const bcrypt = require('bcryptjs');
 
 const _ = require('lodash');
 
+
 class Login {
     // the loginObj: {} userEmail and userPassword
     constructor(loginObj) {
         this.userEmail = loginObj.userEmail;
         this.userPassword = loginObj.userPassword;
+        this.userName = loginObj.userName;
     }
 
     // validate(loginObj)
     static validate(loginObj) {
     const schema = Joi.object({
         userEmail: Joi.string()
+        .email()
         .required(),
-        // .email()
         userPassword: Joi.string()
         .min(1)
         .max(255)
-        .required()
+        .required(),
+        userName: Joi.string()
+        .min(1)
+        .max(50)
     });
 
     return schema.validate(loginObj);
@@ -37,33 +42,40 @@ class Login {
     static readByEmail(loginObj) {
         return new Promise((resolve, reject) => {
             (async () => {
+                // BUT FIRST!!! CHECK IF USER ALREADY EXISTS IN THE DB
+
                 // connect to DB
                 // make a query from the DB using the pool object
                 // have to check if something came back
+                // IMPORTANT = CHECK THE HASHED PASSWORD WITH BCRYPT
                 // if yes -> check format
                 // if format is ok -> resolve
                 // if no -> throw error and reject
                 // AND CLOSE THE DB CONNECTION
 
+                // -- CHECK IF USER EXISTS -- Code goes here
+
                 try {
                     const pool = await sql.connect(con);
                     const result = await pool.request()
                     .input('userEmail', sql.NVarChar(255), loginObj.userEmail)
-                    .input('userPassword', sql.NVarChar(255), loginObj.userPassword)
                     .query(`
-                        SELECT u.userId, u.userName, r.roleId, r.roleName
+                        SELECT u.userId, u.userName, r.roleId, r.roleName, p.passwordValue
                         FROM loginUser u
                         JOIN loginPassword p
                             ON u.userId = p.FK_userId
                         JOIN loginRole r
                             ON r.roleId = u.FK_roleId
-                        WHERE u.userEmail = @userEmail AND p.passwordValue = @userPassword
+                        WHERE u.userEmail = @userEmail
                     `);
 
                     console.log(result);
 
                     if(!result.recordset[0]) throw {statusCode: 404, errorMessage: 'User not found with provided credentials.'}
                     if(result.recordset.length > 1) throw {statusCode: 500, errorMessage: 'DB fucked yo. Multiple hits of unique data found'}
+
+                    // Check hashedPassword with bcrypt - compare
+                    
 
                     const user = {
                         userId: result.recordset[0].userId,
@@ -82,10 +94,13 @@ class Login {
                     console.log(error);
                     reject(error);
                 }
+
                 sql.close(); // ABC - ALWAY BE CLOSING
             })();
         })
-    }
+    };
+
+
 
     // create method to send the data to the database
     create() {
@@ -98,7 +113,6 @@ class Login {
                 // resolve with user
                 // if anything wrong, throw error and reject with error
                 // CLOSE DB CONNECTION
-
                 try {
                     // let's generate hashedPassword with bcryptjs
                     const hashedPassword = await bcrypt.hash(this.userPassword, salt);
@@ -121,11 +135,25 @@ class Login {
                     INSERT INTO loginPassword([passwordValue], [FK_userId])
                     VALUES (@hashedPassword, SCOPE_IDENTITY())
                     `);
-                    
-                } catch (error) {
-                    
-                }
 
+                    console.log(result00);
+                    if(!result00.recordset[0]) throw {statusCode: 500, errorMessage: 'Something went wrong. Login is not created.'} 
+
+                    const user = {
+                        userId: result00.recordset[0].userId,
+                        userId: result00.recordset[0].userId,
+                        userRole: {
+                            roleId: result00.recordset[0].roleId,
+                            roleName: result00.recordset[0].roleName
+                        }
+                    }
+                    console.log('hej');
+                    resolve(user);
+
+                } catch (error) {
+                    console.log(error);
+                    reject(error);
+                }
                 sql.close(); // ABC - ALWAYS BE CLOSING
             })();
         });
